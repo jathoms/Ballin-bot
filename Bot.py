@@ -152,7 +152,7 @@ async def on_message(message):
 
     if message.content.startswith('!help'):
         await message.channel.send(embed=createHelpEmbed())
-    if message.author.id != 193435025193172993 and message.author.id != 867179735301095424 and not deleted:  # me n bot
+    if message.author.id != 193435025193172993 and message.author.id != 867179735301095424:  # me n bot
         await message.delete()
 
 
