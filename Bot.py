@@ -65,7 +65,7 @@ async def on_message(message):
             params.update_one(
                 {}, {"$set": {"ongoing": True, "config": config}})
             initializeTeams()
-            check = await message.channel.send("<@&867039167426068480>\n", embed=await createStartEmbed(message.author), allowed_mentions=discord.AllowedMentions.all())
+            check = await message.channel.send(embed=await createStartEmbed(message.author), allowed_mentions=discord.AllowedMentions.all())
             params.update_one(
                 {}, {"$set": {"msg_id": check.id, "starter": message.author.id}})
             BLU = client.get_emoji(867868050811650068)
@@ -236,7 +236,7 @@ def getGoodArgs():
 
 async def createStartEmbed(author, region="eu"):
     gamemode, mapSelection, config = getGoodArgs()
-    embedVar = discord.Embed(description='<@&867039167426068480> React with BLU or RED to join that team\nFirst ' + str(getTeamSize()) + ' confirmed reactions for each team will be sent server details',
+    embedVar = discord.Embed(description='React with BLU or RED to join that team\nFirst ' + str(getTeamSize()) + ' confirmed reactions for each team will be sent server details',
                              timestamp=datetime.datetime.utcnow(), colour=0xa85202)
     embedVar.set_author(
         name=gamemode + " check started in " + region +
@@ -427,8 +427,8 @@ def getRandomMap(mode):
     elif mode == "HIGHLANDER" or mode == "PROLANDER":
         maps = ["koth_product_rc8", "pl_borneo_rc4",
                 "koth_lakeside", "pl_badwater_pro_rc12",
-                "pl_upward", "pl_barnblitz",
-                "koth_clearcut_b15d"]
+                "pl_upward", "koth_proplant_v7",
+                "cp_steel", "koth_clearcut_b15d"]
     elif mode == "ULTIDUO":
         maps = ["koth_ultiduo", "ultiduo_baloo_b4",
                 "ultiduo_seclusion_b3"]
