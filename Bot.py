@@ -36,14 +36,17 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+
     # and message.channel.id != 867478179094069258:
     if message.channel.id != 871878373352292394:
         return
+
     if message.content.startswith("!mention"):
         await message.channel.send("<@&867039167426068480>", allowed_mentions=discord.AllowedMentions.all())
 
     if message.content.startswith('!start'):
         await message.delete()
+
         if not ongoing():
             errors = parseInput(message.content)
             document = params.find(
@@ -62,7 +65,7 @@ async def on_message(message):
             params.update_one(
                 {}, {"$set": {"ongoing": True, "config": config}})
             initializeTeams()
-            check = await message.channel.send(embed=await createStartEmbed(message.author), allowed_mentions=discord.AllowedMentions.all())
+            check = await message.channel.send("<@&867039167426068480>\n", embed=await createStartEmbed(message.author), allowed_mentions=discord.AllowedMentions.all())
             params.update_one(
                 {}, {"$set": {"msg_id": check.id, "starter": message.author.id}})
             BLU = client.get_emoji(867868050811650068)
@@ -149,7 +152,7 @@ async def on_message(message):
 
     if message.content.startswith('!help'):
         await message.channel.send(embed=createHelpEmbed())
-    if message.author.id != 193435025193172993 and message.author.id != 867179735301095424:  # me n bot
+    if message.author.id != 193435025193172993 and message.author.id != 867179735301095424 and not deleted:  # me n bot
         await message.delete()
 
 
