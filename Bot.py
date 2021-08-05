@@ -317,7 +317,7 @@ def createReadyEmbed(connectstring, user, starter):
         description="Click the link to join your " +
         gamemode +
         " game. (probably doesn't work)\nsteam://connect/" + connectstring,
-        timestamp=datetime.datetime.utcnow())
+        timestamp=datetime.datetime.utcnow(), colour=0xa85202)
     readyEmbed.add_field(name="Or paste the following string into the console: ", value="connect " +
                          connectstring.split("/", 1)[0] + ";password " + connectstring.split("/", 1)[1])
 
@@ -509,12 +509,12 @@ def filterConfigs(val):
         return "invalid order"
     gamemode = document["gamemode"]
 
-    if document["config_set"] == False and gamemode == "PROLANDER":  # nothing has 7s except rgl
-        val = "rgl"
-    if document["config_set"] == False and gamemode == "BBALL":  # eu best config
-        val = "eu"
-    if document["config_set"] == False and gamemode == "BBALL1v1":
-        val = "eu"
+    isSet = document["config_set"]
+    if not isSet:
+        if gamemode == "PROLANDER":  # nothing has 7s except rgl
+            val = "rgl"
+        elif gamemode == "BBALL" or gamemode == "BBALL1v1":  # eu best config
+            val = "eu"
         # for test etc
 
     configs = getConfigs()
@@ -549,9 +549,12 @@ def filterConfigs(val):
 
     print("after all : " + str(len(withLimitAndMap)))
 
-    if not withLimitAndMap:
+    if withLimitAndMap:
+        return withLimitAndMap[0]["file"]
+    elif isSet:
         return "invalid config"
-    return withLimitAndMap[0]["file"]
+    else:
+        return "classic"  # value for no config
 
 
 def reserveServer():
