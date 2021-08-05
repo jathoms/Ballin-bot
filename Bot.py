@@ -41,9 +41,6 @@ async def on_message(message):
     if message.channel.id != 871878373352292394:
         return
 
-    if message.content.startswith("!mention"):
-        await message.channel.send("<@&867039167426068480>", allowed_mentions=discord.AllowedMentions.all())
-
     if message.content.startswith('!start'):
         await message.delete()
 
@@ -56,6 +53,7 @@ async def on_message(message):
                 params.update_one(
                     {}, {"$set": {"map": getRandomMap(document["gamemode"]),
                                   "map_set": True}})
+
             config = filterConfigs(document["config"])
             if errors or config.split(" ")[0] == "invalid":
                 await message.author.send(" ".join(errors) + ", try !help")
@@ -75,6 +73,15 @@ async def on_message(message):
         else:
             await message.author.send("A check is currently in progress, wait until it is over or participate in the current one.")
         return
+
+    if message.content.startswith('!forcestart'):
+        await message.delete()
+        if ongoing() and message.author.id == params.find_one({"starter": {"$exists": True}})["starter"]:
+            oldmsg = await getCurrentCheckId()
+            if oldmsg == -1:
+                return
+            await startGame(oldmsg, force=True)
+            return
 
     if message.content.startswith('!rolled'):
         await message.channel.send("rolled")
@@ -315,7 +322,7 @@ def createReadyEmbed(connectstring, user, starter):
                          connectstring.split("/", 1)[0] + ";password " + connectstring.split("/", 1)[1])
 
     if user == starter:
-        readyEmbed.add_field(name='RCON password:"', value='rcon_address bolus.fakkelbrigade.eu:27035; rcon_password ' + params.find_one(
+        readyEmbed.add_field(name='RCON password:', value='rcon_address bolus.fakkelbrigade.eu:27035; rcon_password ' + params.find_one(
             {"rcon": {"$exists": True}})["rcon"], inline=False)
 
     readyEmbed.set_author(
@@ -615,7 +622,7 @@ async def on_reaction_add(reaction, user):
         return
 
     if embed:
-        oldmsg = await getCurrentCheckId()
+        oldmsg = await getCurrentCheckId()  # Old Message e.g message to be editted
 
         if oldmsg == -1:
             return
@@ -650,37 +657,45 @@ async def on_reaction_add(reaction, user):
                                   "NAME": user.name,
                                   "ID": user.id}
                 nextGamePlayers.insert_one(reactConfirmer)
-
                 newmsg = oldmsg.embeds[0]
-
                 addPlayer(user, team)
-
                 newmsg.set_field_at(teamIndex,
                                     name=team, value=await getPlayersFromDB(team), inline=True)
                 if completed():
                     # Once both teams are full, make a reservation, reset afk check, completion message
-                    newmsg.add_field(
-                        name="All players confirmed!", value="Making reservation...", inline=False)
-                    await oldmsg.edit(embed=newmsg)
-
-                    # Make Reservation
-                    connectstring = reserveServer()
-
-                    # DM all players connect string
-                    player_ids = nextGamePlayers.find(
-                        projection={"_id": False, "ID": True})
-                    starter_id = params.find_one(
-                        {"gamemode": {"$exists": True}})["starter"]
-                    for player_id in player_ids:
-                        player = await client.fetch_user(player_id["ID"])
-                        await player.send(embed=createReadyEmbed(connectstring, player_id["ID"], starter_id))
-                    newmsg.set_field_at(
-                        2, name="Reservation made!", value="Check DMs for a link to the game!", inline=False)
-
-                    await oldmsg.edit(embed=newmsg)
-                    resetAFK()
+                    await startGame(oldmsg)
                     return
 
                 await oldmsg.edit(embed=newmsg)
+
+
+async def startGame(oldmsg, force=False):  # newmsg = oldmsg embed content
+    newmsg = oldmsg.embeds[0]
+    if not force:
+        newmsg.add_field(
+            name="All players confirmed!", value="Making reservation...", inline=False)
+        await oldmsg.edit(embed=newmsg)
+    else:
+        newmsg.add_field(
+            name="Starting with " + str(nextGamePlayers.count_documents({})) + "/" + str(getTeamSize()*2) + " players!", value="Making reservation...", inline=False)
+        await oldmsg.edit(embed=newmsg)
+
+    # Make Reservation
+    connectstring = reserveServer()
+
+    # DM all players connect string
+    player_ids = nextGamePlayers.find(
+        projection={"_id": False, "ID": True})
+    starter_id = params.find_one(
+        {"gamemode": {"$exists": True}})["starter"]
+    for player_id in player_ids:
+        player = await client.fetch_user(player_id["ID"])
+        await player.send(embed=createReadyEmbed(connectstring, player_id["ID"], starter_id))
+    newmsg.set_field_at(
+        2, name="Reservation made!", value="Check DMs for a link to the game!", inline=False)
+
+    await oldmsg.edit(embed=newmsg)
+    resetAFK()
+
 
 client.run(os.getenv('TOKEN'))
