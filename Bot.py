@@ -12,7 +12,7 @@ load_dotenv()
 # IDEAS: Multiple channels for different gamemodes/concurrent checks
 
 activity = discord.Activity(
-    name='2013 frag movies', type=discord.ActivityType.watching)
+    name='top 10 shadowburn airshots vol.19', type=discord.ActivityType.watching)
 
 intents = discord.Intents.default()
 intents.members = True
@@ -210,7 +210,7 @@ def resetAFK():
                             "config_set": False}})
 
 
-def getGoodArgs():
+def getGoodArgs():  # This is for presentation, to show the arguments in the embed
     document = params.find({"gamemode": {"$exists": True}})[0]
     gamemode = document["gamemode"]
     if gamemode == "BBALL":
@@ -397,6 +397,9 @@ def parseInput(input):
             position += 1
 
         value = normalizeAndValidateArg(variable, value)
+
+        if not value:
+            return  # Add error message here?
 
         print(variable + ": " + value)
 
