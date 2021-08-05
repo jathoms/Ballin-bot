@@ -676,9 +676,13 @@ async def startGame(oldmsg, force=False):  # newmsg = oldmsg embed content
             name="All players confirmed!", value="Making reservation...", inline=False)
         await oldmsg.edit(embed=newmsg)
     else:
-        newmsg.add_field(
-            name="Starting with " + str(nextGamePlayers.count_documents({})) + "/" + str(getTeamSize()*2) + " players!", value="Making reservation...", inline=False)
-        await oldmsg.edit(embed=newmsg)
+        playercount = nextGamePlayers.count_documents({})
+        if playercount >= 2:
+            newmsg.add_field(
+                name="Starting with " + str(playercount) + "/" + str(getTeamSize()*2) + " players!", value="Making reservation...", inline=False)
+            await oldmsg.edit(embed=newmsg)
+        else:
+            return
 
     # Make Reservation
     connectstring = reserveServer()
