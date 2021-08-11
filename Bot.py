@@ -6,7 +6,7 @@ import ballin_embeds
 from parse_start_args import parseInput, filterConfigs, getRandomMap
 import serveme_interaction
 import db_interaction as db
-from db_interaction import teams
+from db_interaction import params, maps as mapsList
 load_dotenv()
 
 
@@ -42,11 +42,11 @@ async def on_message(message):
 
         if not db.ongoing():
             errors = parseInput(message.content)
-            document = teams.find(
+            document = params.find(
                 {"config": {"$exists": True}})[0]
 
             if not document["map_set"]:
-                teams.update_one(
+                params.update_one(
                     {}, {"$set": {"map": getRandomMap(document["gamemode"]),
                                   "map_set": True}})
 
@@ -56,11 +56,11 @@ async def on_message(message):
                 db.resetAFK()
                 return
 
-            teams.update_one(
+            params.update_one(
                 {}, {"$set": {"ongoing": True, "config": config}})
             db.initializeTeams()
             check = await message.channel.send(embed=await ballin_embeds.createStartEmbed(message.author, client), allowed_mentions=discord.AllowedMentions.all())
-            teams.update_one(
+            params.update_one(
                 {}, {"$set": {"msg_id": check.id, "starter": message.author.id}})
             BLU = client.get_emoji(DISCORD_SNOWFLAKE_IDS["BLU_EMOJI"])
             RED = client.get_emoji(DISCORD_SNOWFLAKE_IDS["RED_EMOJI"])
@@ -72,7 +72,7 @@ async def on_message(message):
 
     if message.content.startswith('!forcestart'):
         await message.delete()
-        if db.ongoing() and message.author.id == teams.find_one({"starter": {"$exists": True}})["starter"]:
+        if db.ongoing() and message.author.id == params.find_one({"starter": {"$exists": True}})["starter"]:
             oldmsg = await db.getCurrentCheckId(await client.fetch_channel(DISCORD_SNOWFLAKE_IDS["FIRSTSERVER"]))
             if oldmsg == -1:
                 return
@@ -90,7 +90,7 @@ async def on_message(message):
             await message.author.send('You must include a term to search for! For example, try !maps koth\nFor a full, uninterrupted list of maps, head on over to serveme.tf/reservations/new and look in the "First map" dropdown box')
             return
         searchTerm = mapArg[1]
-        maps = teams.find_one({"maps": {"$exists": True}})["maps"]
+        maps = mapsList.find_one({"maps": {"$exists": True}})["maps"]
         mapStringList = ['Maps matching "'+searchTerm + '":\n']
         mapChars = 0
         anyMaps = False
@@ -137,7 +137,7 @@ async def on_message(message):
         return
 
     # id is me
-    if message.content.startswith('!cancel') and (message.author.id == teams.find_one({"starter": {"$exists": True}})["starter"] or message.author.id == 193435025193172993):
+    if message.content.startswith('!cancel') and (message.author.id == params.find_one({"starter": {"$exists": True}})["starter"] or message.author.id == 193435025193172993):
         await message.delete()
         if db.completed():
             return
@@ -268,7 +268,7 @@ async def startGame(oldmsg, force=False):  # newmsg = oldmsg embed content
     # DM all players connect string
     player_ids = db.nextGamePlayers.find(
         projection={"_id": False, "ID": True})
-    document = teams.find_one(
+    document = params.find_one(
         {"gamemode": {"$exists": True}})
     for player_id in player_ids:
         player = await client.fetch_user(player_id["ID"])
