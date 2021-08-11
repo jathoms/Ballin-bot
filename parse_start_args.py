@@ -1,4 +1,4 @@
-from db_interaction import params, teamSizeUpdate, getTeamSize
+from db_interaction import params, teamSizeUpdate, getTeamSize, findMap
 from serveme_interaction import getConfigs
 from random import randrange
 
@@ -9,8 +9,8 @@ def parseInput(input):
     args = input.split(" ")[1:]
     if not args:
         params.update_one({},
-                          {"$set": {"gamemode_set": True,
-                                    "map_set": True}})
+                         {"$set": {"gamemode_set": True,
+                                   "map_set": True}})
         return ""
 
     position = 0
@@ -34,8 +34,9 @@ def parseInput(input):
             return split
 
         params.update_one({variable: {"$exists": True}},
-                          {"$set": {variable: value, variable + "_set": True}})
+                         {"$set": {variable: value, variable + "_set": True}})
     return ""
+
 
 def normalizeAndValidateArg(var, val):
     lowerCase = val.lower()
@@ -68,14 +69,12 @@ def normalizeAndValidateArg(var, val):
         return "invalid gamemode"
 
     elif var == "map":
-        maps = params.find({"maps": {"$exists": True}})[0]
-        if val in maps["maps"] or val in maps["cloud_maps"]:
-            return val
-        return "invalid map"
+        return findMap(val)
 
     elif var == "config":
         params.update_one({}, {"$set": {"config_set": True}})
         return filterConfigs(val)
+
 
 def filterConfigs(val):
     # make sure map and gamemode are both set before config is set, as config is validated using map and gamemode names
@@ -130,6 +129,7 @@ def filterConfigs(val):
     else:
         return "classic"  # value for no config
 
+
 def getGoodArgs():  # This is for presentation, to show the arguments in the embed
     document = params.find({"gamemode": {"$exists": True}})[0]
     gamemode = document["gamemode"]
@@ -153,13 +153,14 @@ def getGoodArgs():  # This is for presentation, to show the arguments in the emb
 
     return gamemode, mapSelection, config
 
+
 def getRandomMap(mode):
     if mode == "BBALL" or mode == "BBALL1v1":
         maps = ["bball_tf_v2", "ctf_ballin_sky",
                 "ctf_bball2", "ctf_bball_sweethills_v1",
                 "bball_royal", "ctf_bball2",
                 "ctf_ballin_exile", "ctf_ballin_wisty",
-                "ctf_bball_neon", "ctf_bball_eventide"
+                "ctf_bball_neon", "ctf_bball_eventide",
                 "bball_eu_fix", "ctf_bball_hoopdreams"]
     elif mode == "SIXES" or mode == "FOURS":
         maps = ["cp_gullywash_pro", "cp_metalworks_rc7",
@@ -173,8 +174,8 @@ def getRandomMap(mode):
                 "pl_upward", "koth_proplant_v7",
                 "cp_steel", "koth_clearcut_b15d"]
     elif mode == "ULTIDUO":
-        maps = ["koth_ultiduo", "ultiduo_baloo_b4",
-                "ultiduo_seclusion_b3"]
+        maps = ["koth_ultiduo", "ultiduo_baloo",
+                "ultiduo_acropolis_b2"]
     else:
         maps = ["koth_product_rc8", "pl_borneo_rc4",
                 "koth_lakeside", "pl_badwater_pro_rc12",

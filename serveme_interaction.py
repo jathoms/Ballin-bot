@@ -4,6 +4,7 @@ from db_interaction import params
 import random
 from string import ascii_letters, digits
 
+
 def getConfigs():
     apiKey = os.getenv("SERVEME")
     available = requests.get(
