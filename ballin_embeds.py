@@ -69,7 +69,7 @@ def createHelpEmbed():
     helpEmbed.set_author(name="BALLIN BOT YOOOOO",
                          icon_url="https://cdn.discordapp.com/attachments/867864919785209866/867864962559115304/circleballin.png")
     helpEmbed.add_field(
-        name="!start", value="Usage: !start <gamemode> <map> <config>\nMap and config are optional\ne.g: !start 6s cp_process_final etf2l\nOr !start hl\nIn a hurry? Simply type !start for some ballin", inline=False)
+        name="!start", value="Usage: !start <gamemode> <map> <config>\nMap and config are optional, map must be typed exactly\ne.g: !start 6s cp_process_final etf2l\nOr !start hl\nIn a hurry? Simply type !start for some ballin", inline=False)
     helpEmbed.add_field(
         name="!fear", value="If you're participating in a check and you fear (or just want to switch teams) you can !fear\nIt's ok, everyone fears sometimes, you won't be shamed", inline=False)
     helpEmbed.add_field(
