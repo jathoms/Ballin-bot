@@ -2,8 +2,7 @@ import pymongo
 from os import getenv
 from dotenv import load_dotenv
 load_dotenv()
-dbclient = pymongo.MongoClient(
-    "mongodb+srv://admin:"+getenv("MONGOPASS")+"@jcl.m99h8.mongodb.net/BallinDB?retryWrites=true&w=majority")
+dbclient = pymongo.MongoClient(getenv("MONGOURI"))
 db = dbclient["BallinDB"]
 nextGamePlayers = db.nextGamePlayers
 ballCheck = db.ballCheck
